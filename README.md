@@ -1,5 +1,7 @@
 # Nimrod
 
+/!\ TESTS YET TO BE DONE. Not production ready.
+
 Baby Babylone Tower Handler.  
 Aka, simple localization php util class.
 
