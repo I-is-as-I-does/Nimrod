@@ -1,0 +1,27 @@
+{
+    "name": "ssitu/nimrod",
+    "description": "Baby Babylone Tower Handler. Aka, simple localization php util class.",
+    "type": "library",
+    "keywords" :["php", "lang", "i18n"],
+    "homepage":"https://github.com/I-is-as-I-does/Nimrod",
+    "license": "MIT",
+    "readme":"README.md",
+    "authors": [
+        {
+            "name": "I-is-as-I-does",
+            "email": "66915011+I-is-as-I-does@users.noreply.github.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "ssitu/blueprints": "^0.2"
+    },
+    "suggest": {
+      
+    },
+    "autoload": {
+        "psr-4": {
+            "SSITU\\Nimrod\\": "src"
+        }
+    }
+}
