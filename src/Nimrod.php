@@ -2,11 +2,13 @@
 /* This file is part of Nimrod | SSITU | (c) 2021 I-is-as-I-does */
 namespace SSITU\Nimrod;
 
-class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
+use \SSITU\Blueprints\Log;
+
+class Nimrod implements Log\FlexLogsInterface
 
 {
 
-    use Blueprints\FlexLogsTrait;
+    use Log\FlexLogsTrait;
 
     private $dfltLang;
     private $sessionKey;
@@ -26,13 +28,12 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
         $this->bulk_load_translRsrc($translRsrcMap);
 
         $this->set_session();
-        $this->set_Lang();
     }
 
     public function t_(string $txtKey, ?array $subst = [], ?bool $strict = null, ?string $lang = null)
     {
         if (is_null($lang)) {
-            $lang = $this->get_currentLang();
+            $lang = $this->get_Lang();
         }
         if (is_null($strict)) {
             $strict = $this->strictMode;
@@ -83,9 +84,12 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
         return true;
     }
 
-    public function load_translRsrc(string $lang, array|string $rsrc)
+    public function load_translRsrc(string $lang, array | string $rsrc)
     {
-        if (is_array($rsrc) || $rsrc = $this->get_fileRsrc($rsrc)) {
+        if (is_string($rsrc)) {
+            $rsrc = $this->get_fileRsrc($rsrc);
+        }
+        if (is_array($rsrc)) {
             if (empty($this->translRsrc[$lang])) {
                 $this->translRsrc[$lang] = $rsrc;
             } else {
@@ -93,7 +97,7 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
             }
             return true;
         }
-        $this->log('alert', 'invalid-transl-rsrc', $rsrc);
+        $this->log('alert', 'invalid-transl-rsrc');
         return false;
     }
 
@@ -107,9 +111,11 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
         return array_keys($this->translRsrc);
     }
 
-    public function get_currentLang()
+    public function get_sessionLang()
     {
-        return $_SESSION[$this->sessionKey];
+        if (array_key_exists($this->sessionKey, $_SESSION)) {
+            return $_SESSION[$this->sessionKey];
+        }
 
     }
 
@@ -121,9 +127,19 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
         return $this->queryLang;
     }
 
+    
+    public function get_Lang(?string $fallbackPreference = null)
+    {
+        if (!array_key_exists($this->sessionKey, $_SESSION)) {
+            $this->set_Lang($fallbackPreference);
+        }
+        return $_SESSION[$this->sessionKey];
+    }
+
+
     public function set_Lang(?string $langPreference = null, ?bool $strict = null)
     {
-        $sessLang = $this->get_currentLang();
+        $sessLang = $this->get_sessionLang();
         if (!empty($sessLang) && $sessLang == $langPreference && $this->langIsAvailable($sessLang)) {
             return;
         }
@@ -175,7 +191,7 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
     protected function get_PhpRsrc(string $path)
     {
         if (file_exists($path)) {
-            require $path;
+            return require $path;
         }
         return false;
     }
@@ -218,7 +234,7 @@ class Nimrod implements \SSITU\Blueprints\FlexLogsInterface
             }
         }
         $this->log('alert', 'no-lang-available');
-        return false;
+
     }
 
     private function transl(string $txtKey, ?string $lang, bool $strict)
