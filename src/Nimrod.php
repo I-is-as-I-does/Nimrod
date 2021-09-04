@@ -218,7 +218,10 @@ class Nimrod implements Log\FlexLogsInterface
     protected function get_fallbackLang(?string $givenLang, bool $strict)
     {
         if ($getLang = $this->get_queryLang()) {
-            return $getLang;
+            if($getLang !=  $givenLang){
+                return $getLang;
+            }
+           
         }
         if ($givenLang != $this->dfltLang && $this->langIsAvailable($this->dfltLang)) {
             return $this->dfltLang;
@@ -234,6 +237,7 @@ class Nimrod implements Log\FlexLogsInterface
             }
         }
         $this->log('alert', 'no-lang-available');
+        return false;
 
     }
 
@@ -245,8 +249,9 @@ class Nimrod implements Log\FlexLogsInterface
 
         $this->log('error', 'missing-translation', ['txtKey' => $txtKey, 'lang' => $lang]);
 
-        if ($fallback = $this->get_fallbackLang($lang, $strict)) {
-            return $this->transl($txtKey, $fallback, $strict);
+        $fallback = $this->get_fallbackLang($lang, $strict);
+        if ($fallback && $this->translIsAvailable($txtKey, $fallback)) {
+            return $this->translRsrc[$fallback][$txtKey];
         }
 
         $this->log('error', 'no-translation-found', ['txtKey' => $txtKey]);
